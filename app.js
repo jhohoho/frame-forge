@@ -106,6 +106,8 @@ generateBtn.addEventListener('click', async () => {
   generateBtn.textContent = '분석 중...';
   resultsEl.innerHTML = '';
 
+  const extraInput = document.getElementById('extraInput').value.trim();
+
   for (const img of images) {
     const card = document.createElement('div');
     card.className = 'result-card';
@@ -113,7 +115,7 @@ generateBtn.addEventListener('click', async () => {
     resultsEl.appendChild(card);
 
     try {
-      const result = await analyzeImage(apiKey, img.dataUrl, img.file.type);
+      const result = await analyzeImage(apiKey, img.dataUrl, img.file.type, extraInput);
       card.innerHTML = renderResult(img.dataUrl, result);
       card.querySelector('.copy-btn').addEventListener('click', (e) => {
         navigator.clipboard.writeText(result.prompt);
@@ -129,7 +131,7 @@ generateBtn.addEventListener('click', async () => {
   generateBtn.textContent = '프롬프트 생성하기';
 });
 
-async function analyzeImage(apiKey, dataUrl, mimeType) {
+async function analyzeImage(apiKey, dataUrl, mimeType, extraInput = '') {
   const base64 = dataUrl.split(',')[1];
 
   const systemPrompt = `You are a video prompt engineer specializing in hyperrealistic macro cinematography and miniature world storytelling.
@@ -149,6 +151,8 @@ Rules for the prompt field:
 - Main hook: 3-second climax moment described precisely
 - End with calm resolution
 - Style tags: Hyperrealistic macro food cinematography, miniature construction world, [material] texture, warm/cool lighting as appropriate, 4K, shallow DOF
+
+${extraInput ? `Additional user direction (must reflect this in the prompt): "${extraInput}"` : ''}
 
 Return only valid JSON. No markdown, no explanation.`;
 

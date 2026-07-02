@@ -318,6 +318,41 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    .extra-input {
+      margin-bottom: 16px;
+    }
+
+    .extra-input label {
+      display: block;
+      font-size: 13px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .extra-input label span {
+      font-size: 11px;
+      color: #555;
+      margin-left: 6px;
+    }
+
+    .extra-input textarea {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 14px;
+      color: #e8e8e8;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      resize: vertical;
+      min-height: 72px;
+      line-height: 1.6;
+    }
+
+    .extra-input textarea:focus { border-color: #f97316; }
+    .extra-input textarea::placeholder { color: #444; }
+
     .error-msg {
       padding: 20px;
       color: #f87171;
@@ -362,6 +397,11 @@
     </div>
 
     <div class="preview-grid" id="previewGrid"></div>
+
+    <div class="extra-input">
+      <label>추가 요청 <span>선택사항</span></label>
+      <textarea id="extraInput" placeholder="예: 슬로우모션 느낌으로, 카메라가 위에서 아래로, 공포스러운 분위기 등 (비워두면 AI가 자동 분석)"></textarea>
+    </div>
 
     <button class="generate-btn" id="generateBtn" disabled>
       프롬프트 생성하기
