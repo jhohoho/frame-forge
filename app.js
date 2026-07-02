@@ -130,13 +130,54 @@ generateBtn.addEventListener('click', async () => {
         setTimeout(() => e.target.textContent = '프롬프트 복사', 1500);
       });
     } catch (err) {
-      card.innerHTML = `<div class="error-msg">오류: ${err.message}</div>`;
+      const waitSec = parseRetrySeconds(err.message);
+      if (waitSec) {
+        card.innerHTML = `<div class="error-msg">쿼터 초과 — 잠시 후 자동으로 재시도됩니다.</div>`;
+        startCooldown(waitSec, async () => {
+          card.innerHTML = `<div class="loading"><div class="spinner"></div> 재시도 중...</div>`;
+          try {
+            const result = await analyzeImage(apiKey, img.dataUrl, img.file.type, extraInput);
+            card.innerHTML = renderResult(img.dataUrl, result);
+            card.querySelector('.copy-btn').addEventListener('click', (e) => {
+              navigator.clipboard.writeText(result.prompt);
+              e.target.textContent = '복사됨 ✓';
+              setTimeout(() => e.target.textContent = '프롬프트 복사', 1500);
+            });
+          } catch (e2) {
+            card.innerHTML = `<div class="error-msg">오류: ${e2.message}</div>`;
+          }
+        });
+      } else {
+        card.innerHTML = `<div class="error-msg">오류: ${err.message}</div>`;
+      }
     }
   }
 
   generateBtn.disabled = false;
   generateBtn.textContent = '프롬프트 생성하기';
 });
+
+function parseRetrySeconds(msg) {
+  const match = msg.match(/retry in ([\d.]+)s/i);
+  return match ? Math.ceil(parseFloat(match[1])) : null;
+}
+
+function startCooldown(seconds, onDone) {
+  generateBtn.disabled = true;
+  let remaining = seconds;
+  const tick = () => {
+    generateBtn.textContent = `대기 중... ${remaining}초`;
+    if (remaining <= 0) {
+      generateBtn.textContent = '프롬프트 생성하기';
+      generateBtn.disabled = images.length === 0;
+      onDone();
+      return;
+    }
+    remaining--;
+    setTimeout(tick, 1000);
+  };
+  tick();
+}
 
 async function analyzeImage(apiKey, dataUrl, mimeType, extraInput = '') {
   const base64 = dataUrl.split(',')[1];
