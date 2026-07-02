@@ -9,7 +9,7 @@ const apiKeyInput = document.getElementById('apiKeyInput');
 const modalCancel = document.getElementById('modalCancel');
 const modalSave = document.getElementById('modalSave');
 
-function getApiKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
+function getApiKey() { return sessionStorage.getItem(STORAGE_KEY) || ''; }
 
 function updateApiBadge() {
   const key = getApiKey();
@@ -32,8 +32,15 @@ modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) m
 
 modalSave.addEventListener('click', () => {
   const key = apiKeyInput.value.trim();
-  if (key) localStorage.setItem(STORAGE_KEY, key);
-  else localStorage.removeItem(STORAGE_KEY);
+  if (key) sessionStorage.setItem(STORAGE_KEY, key);
+  else sessionStorage.removeItem(STORAGE_KEY);
+  modalOverlay.classList.remove('open');
+  updateApiBadge();
+});
+
+document.getElementById('modalDelete').addEventListener('click', () => {
+  sessionStorage.removeItem(STORAGE_KEY);
+  apiKeyInput.value = '';
   modalOverlay.classList.remove('open');
   updateApiBadge();
 });

@@ -104,6 +104,7 @@
 
     .btn-primary { background: #f97316; color: #fff; }
     .btn-ghost { background: #2a2a2a; color: #e8e8e8; }
+    .btn-delete { background: transparent; color: #888; border: 1px solid #333; margin-right: auto; }
 
     /* Main */
     main {
@@ -377,6 +378,7 @@
       <p>Google AI Studio에서 발급받은 API 키를 입력하세요.<br>키는 브라우저에만 저장되며 외부로 전송되지 않습니다.</p>
       <input type="password" id="apiKeyInput" placeholder="AIza..." />
       <div class="modal-actions">
+        <button class="btn-delete" id="modalDelete">키 삭제</button>
         <button class="btn-ghost" id="modalCancel">취소</button>
         <button class="btn-primary" id="modalSave">저장</button>
       </div>
