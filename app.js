@@ -205,7 +205,7 @@ ${extraInput ? `Additional user direction (must reflect this in the prompt): "${
 Return only valid JSON. No markdown, no explanation.`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -216,7 +216,11 @@ Return only valid JSON. No markdown, no explanation.`;
             { inline_data: { mime_type: mimeType || 'image/jpeg', data: base64 } }
           ]
         }],
-        generationConfig: { temperature: 0.7, maxOutputTokens: 1024 }
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4096,
+          responseMimeType: 'application/json'
+        }
       })
     }
   );
@@ -227,16 +231,21 @@ Return only valid JSON. No markdown, no explanation.`;
   }
 
   const data = await response.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  const parts = data.candidates?.[0]?.content?.parts || [];
+  // gemini-2.5-flash는 thinking part가 먼저 올 수 있으므로 JSON이 있는 part를 찾음
+  const text = parts.find(p => p.text?.trim().startsWith('{'))?.text
+    || parts[parts.length - 1]?.text || '';
 
-  try {
-    return JSON.parse(text.trim());
-  } catch {
-    // fallback if model adds markdown fences
-    const match = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (match) return JSON.parse(match[1].trim());
-    throw new Error('응답 파싱 실패. 다시 시도해주세요.');
-  }
+  const cleaned = text.trim();
+  // 1. 직접 파싱 시도
+  try { return JSON.parse(cleaned); } catch {}
+  // 2. 마크다운 코드 블록 제거 후 파싱
+  const fenceMatch = cleaned.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fenceMatch) { try { return JSON.parse(fenceMatch[1].trim()); } catch {} }
+  // 3. { ... } 구간만 추출 후 파싱
+  const objMatch = cleaned.match(/\{[\s\S]*\}/);
+  if (objMatch) { try { return JSON.parse(objMatch[0]); } catch {} }
+  throw new Error('응답 파싱 실패. 다시 시도해주세요.');
 }
 
 function renderResult(dataUrl, result) {
